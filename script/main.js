@@ -36,7 +36,17 @@ var initial = function(){
            '</div>' +
            '</foreignObject>' +
            '</svg>';
-           var DOMURL = window.URL || window.webkitURL || window;
+        var vertical_line = [];
+        var horizontal_line = [];
+        for (var i = 0 ; i < horizontal_segment; i++){
+			//render(i*horizon_interval, 0, i*horizon_interval, ctx.canvas.clientHeight+i*horizon_interval);
+			horizontal_line.push("<span class='line' style='top:"+ i*horizon_interval +"; left:0px;'></div>");
+		}
+		for (var i = 0 ; i < vertical_segment; i++){
+			//render(0, i*vertical_interval, ctx.canvas.clientWidth+i*vertical_interval, i*vertical_interval);
+		}
+
+        var DOMURL = window.URL || window.webkitURL || window;
 
 		var img = new Image();
 		var svg = new Blob([data], {type: 'image/svg+xml'});
