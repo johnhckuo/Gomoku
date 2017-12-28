@@ -4,18 +4,16 @@ html, body {
   margin: 0px;
   cursor:pointer;
 }
-canvas { 
+canvas {
 	position: absolute;
 	top:0px;
 	left:0px;
-	border: 1px solid black; 
 	width:100vw;
 	height:100vh;
 }
 
 .line{
-    width: 112px;
-    height: 47px;
     border-bottom: 1px solid black;
+    border-right: 1px solid black;
     position: absolute;
 }

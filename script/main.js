@@ -10,83 +10,37 @@ var horizontal_segment = 10, vertical_segment = 10;
 var horizon_interval = width/horizontal_segment;
 var vertical_interval = height/vertical_segment;
 var startX, endX, startY, endY;
+var canvas_support;
+var move = 0;
+var blackStone;
 
 var initial = function(){
 	ctx.canvas.width  = width;
-  	ctx.canvas.height = height;
-	if (isCanvasSupported()){
-	 	ctx.beginPath();
-		
-		for (var i = 0 ; i < horizontal_segment; i++){
-			render(i*horizon_interval, 0, i*horizon_interval, ctx.canvas.clientHeight+i*horizon_interval);
-		}
-		for (var i = 0 ; i < vertical_segment; i++){
-			render(0, i*vertical_interval, ctx.canvas.clientWidth+i*vertical_interval, i*vertical_interval);
-		}
-		ctx.stroke();
-	}else{
+  ctx.canvas.height = height;
 
-	  // canvas-unsupported code here
-	  	var data = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">' +
-           '<foreignObject width="100%" height="100%">' +
-           '<div xmlns="http://www.w3.org/1999/xhtml" style="font-size:40px">' +
-             '<em>test</em> test ' + 
-             '<span style="color:white; text-shadow:0 0 2px blue;">' +
-             'test</span>' +
-           '</div>' +
-           '</foreignObject>' +
-           '</svg>';
-        var vertical_line = [];
-        var horizontal_line = [];
-        for (var i = 0 ; i < horizontal_segment; i++){
-			//render(i*horizon_interval, 0, i*horizon_interval, ctx.canvas.clientHeight+i*horizon_interval);
-			horizontal_line.push("<span class='line' style='top:"+ i*horizon_interval +"; left:0px;'></div>");
-		}
-		for (var i = 0 ; i < vertical_segment; i++){
-			//render(0, i*vertical_interval, ctx.canvas.clientWidth+i*vertical_interval, i*vertical_interval);
-		}
-
-        var DOMURL = window.URL || window.webkitURL || window;
-
-		var img = new Image();
-		var svg = new Blob([data], {type: 'image/svg+xml'});
-		var url = DOMURL.createObjectURL(svg);
-
-		img.onload = function() {
-		  ctx.drawImage(img, 0, 0);
-		  DOMURL.revokeObjectURL(url);
-		}
-
-		img.src = url;
-	}
-
-
+  renderChessBoard();
 
 	$('#main').click(function(e) {
+      //return !$(this).hasClass('clicked');
+
 	    var x = e.offsetX,
 	        y = e.offsetY;
-	    var currentXSegment = x/horizon_interval;
-	    var currentYSegment = y/vertical_interval;
 
+      computeStartingPoint(x, y);
+      if (canvas_support){
+        var radius = horizon_interval > vertical_interval ? vertical_interval/2.5 : horizon_interval/2.5;
+        if (move % 2){
+          drawArc(startX + horizon_interval/2,  startY + vertical_interval/2, radius, 0,   360, false, "black", "black");
+
+        }else{
+          drawArc(startX + horizon_interval/2,  startY + vertical_interval/2, radius, 0,   360, false, "black", "white");
+        }
+      }
+      move++;
 	});
 
-	$( "#main" ).mousemove(function( e ) {
-	    var x = e.offsetX,
-	        y = e.offsetY;
-		if (startX != null){
+  window.addEventListener('resize', onWindowResize, false);
 
-			ctx.clearRect(startX, startY, horizon_interval, vertical_interval);
-		}
-
-	    var currentXSegment = Math.floor(x/horizon_interval);
-	    var currentYSegment = Math.floor(y/vertical_interval);
-	    startX = currentXSegment*horizon_interval, startY = currentYSegment*vertical_interval;
-		ctx.fillRect(startX, startY, horizon_interval, vertical_interval);
-		ctx.stroke();
-
-	});
-
-	
 }
 
 var render = function(startX, startY, endX, endY){
@@ -98,6 +52,63 @@ var render = function(startX, startY, endX, endY){
 function isCanvasSupported(){
   var elem = document.createElement('canvas');
   return !!(elem.getContext && elem.getContext('2d'));
+}
+
+var computeStartingPoint = function(x, y){
+  var currentXSegment = Math.floor(x/horizon_interval);
+  var currentYSegment = Math.floor(y/vertical_interval);
+  startX = currentXSegment*horizon_interval, startY = currentYSegment*vertical_interval;
+}
+
+function drawArc(xPos, yPos, radius, startAngle, endAngle, anticlockwise, lineColor, fillColor){
+
+  var startAngle = startAngle * (Math.PI/180);
+  var endAngle   = endAngle   * (Math.PI/180);
+
+  ctx.strokeStyle = lineColor;
+  ctx.fillStyle   = fillColor;
+  ctx.lineWidth   = 8;
+
+  ctx.beginPath();
+  ctx.arc(xPos, yPos,
+  radius,
+  startAngle, endAngle,
+  anticlockwise);
+  ctx.fill();
+  ctx.stroke();
+}
+
+function onWindowResize() {
+
+}
+
+function renderChessBoard(){
+  if (isCanvasSupported()){
+    canvas_support = true;
+    ctx.beginPath();
+
+    for (var i = 0 ; i < horizontal_segment; i++){
+      render(i*horizon_interval, 0, i*horizon_interval, ctx.canvas.clientHeight+i*horizon_interval);
+    }
+    for (var i = 0 ; i < vertical_segment; i++){
+      render(0, i*vertical_interval, ctx.canvas.clientWidth+i*vertical_interval, i*vertical_interval);
+    }
+    ctx.stroke();
+
+  }else{
+    canvas_support = false;
+    var vertical_line = [];
+    var horizontal_line = [];
+
+    for (var i = 0 ; i < horizontal_segment; i++){
+        for (var j = 0 ; j < vertical_segment ; j++){
+          $("#container").append("<span class='line line_"+ i + "_" + j +"' style='top:"+ i*vertical_interval +"px; left:"+ j*horizon_interval +"px;'></span>");
+        }
+       //render(i*horizon_interval, 0, i*horizon_interval, ctx.canvas.clientHeight+i*horizon_interval);
+    }
+    $(".line").css("width", horizon_interval);
+    $(".line").css("height", vertical_interval);
+  }
 }
 
 initial();
