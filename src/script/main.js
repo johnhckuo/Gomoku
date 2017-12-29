@@ -1,3 +1,6 @@
+import '../scss/reset.scss'; 
+import '../scss/main.scss'; 
+
 var canvas = document.getElementById('main');
 var ctx = canvas.getContext('2d');
 var w = window,
@@ -7,70 +10,73 @@ var w = window,
     width = w.innerWidth || e.clientWidth || g.clientWidth,
     height = w.innerHeight|| e.clientHeight|| g.clientHeight;
 var horizontal_segment = 10, vertical_segment = 10;
-var horizon_interval = width/horizontal_segment;
-var vertical_interval = height/vertical_segment;
+var horizon_interval, vertical_interval;
 var startX, endX, startY, endY;
+var currentXSegment, currentYSegment;
 var canvas_support;
 var move = 0;
 var steps;
 
-var initial = function(){
-  ctx.canvas.width  = width;
-  ctx.canvas.height = height;
-  steps = initArray(horizontal_segment, vertical_segment);
-  renderChessBoard();
+initial();
 
+function initial(){
+
+	ctx.canvas.width  = width;
+	ctx.canvas.height = height;
+
+	horizon_interval = width/horizontal_segment;
+	vertical_interval = height/vertical_segment;
+	steps = initArray(horizontal_segment, vertical_segment);
+	renderChessBoard();
 	$('#main').click(function(e) {
-      //return !$(this).hasClass('clicked');
 
-	    var x = e.offsetX,
-	        y = e.offsetY;
+		var x = e.offsetX,
+		    y = e.offsetY;
 
-      computeStartingPoint(x, y);
-      var clicked = recordPosition(currentXSegment, currentYSegment, move%2);
-      
-      if (clicked){
-      	alert("Invalid Position");
-      	return;
-      }
+		computeStartingPoint(x, y);
+		var valid = validMove(move%2);
 
-    var radius = horizon_interval > vertical_interval ? vertical_interval/2.5 : horizon_interval/2.5;
-    if (move % 2){
-      drawArc(startX + horizon_interval/2,  startY + vertical_interval/2, radius, 0,   360, false, "black", "black");
+		if (!valid){
+			alert("Invalid Position");
+			return;
+		}
+		var radius = horizon_interval > vertical_interval ? vertical_interval/2.5 : horizon_interval/2.5;
+		if (move % 2){
+		  drawArc(startX + horizon_interval/2,  startY + vertical_interval/2, radius, 0,   360, false, "black", "black");
 
-    }else{
-      drawArc(startX + horizon_interval/2,  startY + vertical_interval/2, radius, 0,   360, false, "black", "white");
-    }
+		}else{
+		  drawArc(startX + horizon_interval/2,  startY + vertical_interval/2, radius, 0,   360, false, "black", "white");
+		}
 
-      detectWin(currentXSegment, currentYSegment, move%2);
-      move++;
+		winnerCheck(move%2);
+		move++;
 	});
 
-  window.addEventListener('resize', onWindowResize, false);
+  	window.addEventListener('resize', onWindowResize, false);
 
 }
 
-var render = function(startX, startY, endX, endY){
+function render(startX, startY, endX, endY){
 	ctx.moveTo(startX, startY);
 	ctx.lineTo(endX, endY);
 }
 
 
 function isCanvasSupported(){
-  var elem = document.createElement('canvas');
-  return !!(elem.getContext && elem.getContext('2d'));
+	var elem = document.createElement('canvas');
+	return !!(elem.getContext && elem.getContext('2d'));
 }
 
-var computeStartingPoint = function(x, y){
-  currentXSegment = Math.floor(x/horizon_interval);
-  currentYSegment = Math.floor(y/vertical_interval);
-  startX = currentXSegment*horizon_interval, startY = currentYSegment*vertical_interval;
+function computeStartingPoint(x, y){
+	currentXSegment = Math.floor(x/horizon_interval);
+	currentYSegment = Math.floor(y/vertical_interval);
+	startX = currentXSegment*horizon_interval, startY = currentYSegment*vertical_interval;
 
 }
 
 function drawArc(xPos, yPos, radius, startAngle, endAngle, anticlockwise, lineColor, fillColor){
-	//if (canvas_support){
-	if (false){
+	if (canvas_support){
+
 		var startAngle = startAngle * (Math.PI/180);
 		var endAngle   = endAngle   * (Math.PI/180);
 
@@ -86,8 +92,7 @@ function drawArc(xPos, yPos, radius, startAngle, endAngle, anticlockwise, lineCo
 		ctx.fill();
 		ctx.stroke();
 	}else{
-
-		var link = $('<div/>',{
+		var circle = $('<span/>',{
 		class: 'circle',
 		   css:{
 				left: xPos - radius + "px",
@@ -98,7 +103,7 @@ function drawArc(xPos, yPos, radius, startAngle, endAngle, anticlockwise, lineCo
 				height:radius*2
 		   }
 		})
-		$("#container").append(link);	
+		$("#container").append(circle);	
 
 	}
 }
@@ -108,100 +113,124 @@ function onWindowResize() {
 }
 
 function renderChessBoard(){
-  if (isCanvasSupported()){
-    canvas_support = true;
-    ctx.beginPath();
+	if (isCanvasSupported()){
+		canvas_support = true;
+		ctx.beginPath();
+		for (var i = 0 ; i < horizontal_segment; i++){
+		  render(i*horizon_interval, 0, i*horizon_interval, ctx.canvas.clientHeight+i*horizon_interval);
+		}
+		for (var i = 0 ; i < vertical_segment; i++){
+		  render(0, i*vertical_interval, ctx.canvas.clientWidth+i*vertical_interval, i*vertical_interval);
+		}
+		ctx.stroke();
 
-    for (var i = 0 ; i < horizontal_segment; i++){
-      render(i*horizon_interval, 0, i*horizon_interval, ctx.canvas.clientHeight+i*horizon_interval);
-    }
-    for (var i = 0 ; i < vertical_segment; i++){
-      render(0, i*vertical_interval, ctx.canvas.clientWidth+i*vertical_interval, i*vertical_interval);
-    }
-    ctx.stroke();
-
-  }else{
-    canvas_support = false;
-    var vertical_line = [];
-    var horizontal_line = [];
-
-    for (var i = 0 ; i < horizontal_segment; i++){
-        for (var j = 0 ; j < vertical_segment ; j++){
-          $("#container").append("<span class='line line_"+ i + "_" + j +"' style='top:"+ i*vertical_interval +"px; left:"+ j*horizon_interval +"px;'></span>");
-        }
-       //render(i*horizon_interval, 0, i*horizon_interval, ctx.canvas.clientHeight+i*horizon_interval);
-    }
-    $(".line").css("width", horizon_interval);
-    $(".line").css("height", vertical_interval);
-  }
-}
-
-function recordPosition(x, y, player){
-	if (steps[x][y] == -1){
-		steps[x][y] = player;
-		return false;
 	}else{
-		return true;
+		canvas_support = false;
+		$("body").append("<div id='container'></div>");
+		var vertical_line = [];
+		var horizontal_line = [];
+
+		for (var i = 0 ; i < horizontal_segment; i++){
+		    for (var j = 0 ; j < vertical_segment ; j++){
+		      $("#container").append("<span class='line line_"+ i + "_" + j +"' style='top:"+ i*vertical_interval +"px; left:"+ j*horizon_interval +"px;'></span>");
+		    }
+		}
+		$(".line").css("width", horizon_interval);
+		$(".line").css("height", vertical_interval);
 	}
 }
 
-function detectWin(x, y, player){
+function validMove(player){
+
+	var x = currentXSegment;
+	var y = currentYSegment;
+
+	if (move == horizontal_segment*vertical_segment){
+		alert("Game Tied!");
+	}
+	if (steps[x][y] == -1){
+		steps[x][y] = player;
+		return true;
+	}else{
+		return false;
+	}
+}
+
+function winnerCheck(player){
+
+	var x = currentXSegment;
+	var y = currentYSegment;
+	if (horizontal_Check(x, y, player) 
+		|| vertical_Check(x, y, player) 
+		|| diagonal_Check(x, y, player))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+function horizontal_Check(x, y, player){
 	var count = 1;	//current move
-	var pivot_X, pivot_Y;
+	var pivot_X;
 
 	//horizontal
 	pivot_X = x;
 	while ((pivot_X+1 < horizontal_segment) && (steps[pivot_X+1][y] == player)){
 		count++;
 		pivot_X++;
-		if (count >= 5){
-			alert("player"+player +" wins!");
-			return;
+		if (checkConsecutiveSteps(count, player)){
+			return true;
 		}
 	}
 	pivot_X = x;
 	while ((pivot_X-1 >= 0) && (steps[pivot_X-1][y] == player)){
 		count++;
 		pivot_X--;
-		if (count >= 5){
-			alert("player"+player +" wins!");
-			return;
+		if (checkConsecutiveSteps(count, player)){
+			return true;
 		}
 	}
+	return false;
+}
 
-	count = 1;
+function vertical_Check(x, y, player){
+	
+	var count = 1;	//current move
+	var pivot_Y;
 
-	//vertical
 	pivot_Y = y;
 	while ((pivot_Y+1 < vertical_segment) && (steps[x][pivot_Y+1] == player)){
 		count++;
 		pivot_Y++;
-		if (count >= 5){
-			alert("player"+player +" wins!");
-			return;
+		if (checkConsecutiveSteps(count, player)){
+			return true;
 		}
 	}
 	pivot_Y = y;
 	while ((pivot_Y-1 >= 0) && (steps[x][pivot_Y-1] == player)){
 		count++;
 		pivot_Y--;
-		if (count >= 5){
-			alert("player"+player +" wins!");
-			return;
+		if (checkConsecutiveSteps(count, player)){
+			return true;
 		}
 	}
-	count = 1;
+	return false;
+}
 
-	//diagonal
+function diagonal_Check(x, y, player){
+
+	var count = 1;	//current move
+	var pivot_X, pivot_Y;
+
 	pivot_X = x;
 	pivot_Y = y;
 	while ((pivot_X+1 < horizontal_segment) && (pivot_Y+1 < vertical_segment) && (steps[pivot_X+1][pivot_Y+1] == player)){
 		count++;
 		pivot_X++;
 		pivot_Y++;
-		if (count >= 5){
-			alert("player"+player +" wins!");
-			return;
+		if (checkConsecutiveSteps(count, player)){
+			return true;
 		}
 	}
 	pivot_X = x;
@@ -210,18 +239,27 @@ function detectWin(x, y, player){
 		count++;
 		pivot_X--;
 		pivot_Y--;
-		if (count >= 5){
-			alert("player"+player +" wins!");
-			return;
+		if (checkConsecutiveSteps(count, player)){
+			return true;
 		}
+	}
+	return false;
+}
+
+function checkConsecutiveSteps(count, player){
+	if (count >= 5){
+		alert("Congratulations! Player "+player +" wins!");
+		return true;
+	}else{
+		return false;
 	}
 }
 
+
 function initArray(rows, cols) {
-  var array = [], row = [];
-  while (cols--) row.push(-1);
-  while (rows--) array.push(row.slice());
-  return array;
+	var array = [], row = [];
+	while (cols--) row.push(-1);
+	while (rows--) array.push(row.slice());
+	return array;
 }
 
-initial();
