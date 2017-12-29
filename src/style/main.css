@@ -17,3 +17,8 @@ canvas {
     border-right: 1px solid black;
     position: absolute;
 }
+
+.circle{
+  position: absolute;
+  border-radius: 100%;
+}
