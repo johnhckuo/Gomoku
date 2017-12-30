@@ -47,7 +47,7 @@ var Canvas = {
 		this.ctx.stroke();
   },
   clearCanvas:function(width, height){
-    this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+    this.ctx.clearRect(0, 0, width, height);
   }
 }
 
