@@ -6,7 +6,7 @@ import swal from 'sweetalert2'
 
 var canvas, ctx;
 var width, height;
-var horizontal_segment = 10, vertical_segment = 10;
+var horizontal_segment = 30, vertical_segment = 30;
 var horizon_interval, vertical_interval;
 var startX, endX, startY, endY;
 var currentXSegment, currentYSegment;
@@ -19,8 +19,8 @@ registerPlayerEvent();
 
 function initial(){
 
-		steps = initArray(horizontal_segment, vertical_segment);
 	  fetchBrowserInfo();
+		steps = initArray(horizontal_segment, vertical_segment);
 		renderChessBoard();
 	  registerPlayerData();
 
@@ -79,7 +79,7 @@ function fetchBrowserInfo(){
 
     width = w.innerWidth || e.clientWidth || g.clientWidth,
     height = w.innerHeight|| e.clientHeight|| g.clientHeight;
-		horizontal_segment = vertical_segment*width/height;
+		vertical_segment = Math.floor(horizontal_segment*(height/width));
 
     if (Canvas.isCanvasSupported()){
 			if (!$('#main').length){
