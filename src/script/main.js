@@ -13,6 +13,9 @@ var currentXSegment, currentYSegment;
 var canvas_support;
 var move = 0, firstMove = 0;
 var steps;
+var rtime;
+var timeout = false;
+var delta = 200;
 
 initial();
 registerPlayerEvent();
@@ -32,7 +35,24 @@ function registerPlayerEvent(){
 	  }else{
 	    $('#container').click(playerClick);
 	  }
-	  window.addEventListener('resize', canvasResize, false);
+
+		//detect on resize end so that we can save more computing power
+		$(window).resize(function() {
+		    rtime = new Date();
+		    if (timeout === false) {
+		        timeout = true;
+		        setTimeout(resizeend, delta);
+		    }
+		});
+}
+
+function resizeend() {
+    if (new Date() - rtime < delta) {
+        setTimeout(resizeend, delta);
+    } else {
+        timeout = false;
+        canvasResize();
+    }
 }
 
 function playerClick(e){
@@ -79,8 +99,7 @@ function fetchBrowserInfo(){
 
     width = w.innerWidth || e.clientWidth || g.clientWidth,
     height = w.innerHeight|| e.clientHeight|| g.clientHeight;
-		vertical_segment = Math.floor(horizontal_segment*(height/width));
-
+		horizontal_segment = Math.floor(vertical_segment*(width/height));
     if (Canvas.isCanvasSupported()){
 			if (!$('#main').length){
 				$("body").append("<canvas id='main'></canvas>");
@@ -196,8 +215,25 @@ function renderPlayerProgress(){
 	  }
 }
 
+function recalculateSteps(){
+	var oldSteps = steps;
+	if (horizontal_segment > oldSteps.length){
+		var difference = horizontal_segment - oldSteps.length;
+		var start = oldSteps.length-1;
+		var childArr = [];
+		for (var j = 0 ; j < vertical_segment ; j++){
+			childArr.push(-1);
+		}
+		for (var i = start ; i < start + difference  ; i++){
+			oldSteps.push(childArr);
+		}
+		steps = oldSteps;
+	}
+}
+
 function canvasResize(){
 	  rerenderCanvas();
+		recalculateSteps();
 	  renderPlayerProgress();
 }
 
