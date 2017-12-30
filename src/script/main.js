@@ -6,7 +6,7 @@ import swal from 'sweetalert2'
 
 var canvas, ctx;
 var width, height;
-var horizontal_segment = 20, vertical_segment = 10;
+var horizontal_segment = 10, vertical_segment = 10;
 var horizon_interval, vertical_interval;
 var startX, endX, startY, endY;
 var currentXSegment, currentYSegment;
@@ -79,6 +79,8 @@ function fetchBrowserInfo(){
 
     width = w.innerWidth || e.clientWidth || g.clientWidth,
     height = w.innerHeight|| e.clientHeight|| g.clientHeight;
+		horizontal_segment = vertical_segment*width/height;
+
     if (Canvas.isCanvasSupported()){
 			if (!$('#main').length){
 				$("body").append("<canvas id='main'></canvas>");

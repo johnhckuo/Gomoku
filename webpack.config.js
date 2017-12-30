@@ -23,7 +23,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: 'src/index.html'
     }),
-	  extractPlugin,
+    extractPlugin,
     new CleanWebpackPlugin(['dist'])
   ],
   module: {
@@ -42,14 +42,14 @@ module.exports = {
             ]
         },
         {
-			test: /\.scss$/,
-			use: extractPlugin.extract({
-			    use: [
-			        'css-loader',
-			        'sass-loader'
-			    ]
-			})
-		}
+      			test: /\.scss$/,
+      			use: extractPlugin.extract({
+      			    use: [
+      			        'css-loader',
+      			        'sass-loader'
+      			    ]
+      			})
+      	}
     ]
   }
 };
