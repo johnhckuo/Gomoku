@@ -21,7 +21,7 @@ initial();
 registerPlayerEvent();
 
 function initial(){
-
+		move = 0;
 	  fetchBrowserInfo();
 		steps = initArray(horizontal_segment, vertical_segment);
 		renderChessBoard();
@@ -58,6 +58,16 @@ function resizeend() {
 function playerClick(e){
 	  var x = e.pageX,
 	      y = e.pageY;
+
+		if (canvas_support){
+			var canvasParent = $('#main');
+			x += canvasParent.position().left;
+			y += canvasParent.position().top;
+		}else{
+			var divParent = $("#container");
+			x += divParent.position().left;
+			y += divParent.position().top;
+		}
 
 	  computeStartingPoint(x, y);
 	  var valid = validMove(move%2);
@@ -216,7 +226,7 @@ function renderPlayerProgress(){
 }
 
 function recalculateSteps(){
-	var oldSteps = steps;
+	var oldSteps = steps.slice();
 	if (horizontal_segment > oldSteps.length){
 		var difference = horizontal_segment - oldSteps.length;
 		var start = oldSteps.length-1;
@@ -225,7 +235,7 @@ function recalculateSteps(){
 			childArr.push(-1);
 		}
 		for (var i = start ; i < start + difference  ; i++){
-			oldSteps.push(childArr);
+			oldSteps.push(childArr.slice());
 		}
 		steps = oldSteps;
 	}
