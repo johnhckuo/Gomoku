@@ -49,7 +49,8 @@ module.exports = {
       			        'sass-loader'
       			    ]
       			})
-      	}
+      	},
+        {test: /\.png$/, use: 'url-loader?mimetype=image/png'},
     ]
   }
 };

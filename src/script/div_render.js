@@ -8,8 +8,8 @@ var Div = {
     this.vertical_interval = vertical_interval;
   },
   renderChessBoard: function(){
-    for (var i = 0 ; i <= this.horizontal_segment; i++){
-		    for (var j = 0 ; j <= this.vertical_segment ; j++){
+    for (var i = 0 ; i <= this.vertical_segment; i++){
+		    for (var j = 0 ; j <= this.horizontal_segment ; j++){
           var top = (i*this.vertical_interval) - (this.vertical_interval/2);
           var left = (j*this.horizon_interval) - (this.horizon_interval/2);
 		      $("#grid").append("<span class='line line_"+ i + "_" + j +"' style='top:"+ top +"px; left:"+ left +"px;'></span>");

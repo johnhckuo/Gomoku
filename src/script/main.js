@@ -3,6 +3,10 @@ import '../scss/main.scss';
 import Canvas from './canvas_render.js';
 import Div from './div_render.js';
 import swal from 'sweetalert2'
+import champ_img from "../images/champ.png";
+import draw_img from "../images/draw.png";
+import welcome_img from "../images/welcome.png";
+import background from "../images/background.png";
 
 var canvas, ctx;
 var width, height;
@@ -76,6 +80,9 @@ function playerClick(e){
 	      title: 'Invalid Position!',
 	      text: 'This spot has already been taken!',
 	      timer: 1500,
+				type:"error",
+				padding: 50,
+				background: '#fff url(' + background + ')',
 	      onOpen: function(){
 	        swal.showLoading();
 	      }
@@ -97,7 +104,7 @@ function playerClick(e){
 
 	  winnerCheck(move%2);
 	  move++;
-		gameTiedCheck();
+		drawCheck();
 }
 
 
@@ -135,7 +142,6 @@ function registerPlayerData(){
     swal({
         title: 'Who gets the first move?',
         text: "Player 0 → White Stone | Player 1 → Black Stone",
-        type: 'info',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
@@ -144,24 +150,43 @@ function registerPlayerData(){
         confirmButtonClass: 'btn btn-primary',
         cancelButtonClass: 'btn btn-success',
         buttonsStyling: false,
-        reverseButtons: false
+        reverseButtons: false,
+				imageUrl: welcome_img,
+				imageWidth: 150,
+				imageHeight: 150,
+				imageAlt: 'Custom image',
+				padding: 50,
+				background: '#fff url('+ background +')'
     }).then(function(result){
         if (result.dismiss === 'cancel') {
             move++;
             firstMove = 1;
         }
-        swal(
-          'Get Ready!',
-          'Let the game begins!',
-          'success'
-        )
+				swal({
+		      title: 'Get Ready!',
+		      text: 'Let the game begins~',
+		      timer: 1500,
+					type:"success",
+					padding: 50,
+					background: '#fff url(' + background + ')',
+		      onOpen: function(){
+		        swal.showLoading();
+		      }
+		    })
     })
 }
 
 
 function computeStartingPoint(x, y){
-		currentXSegment = Math.floor(x/horizon_interval);
-		currentYSegment = Math.floor(y/vertical_interval);
+		if (!canvas_support){
+			x -= (horizon_interval/2);
+		}else{
+			x -= (horizon_interval/2);
+			y -= (vertical_interval/2);
+		}
+
+		currentXSegment = Math.round(x/horizon_interval);
+		currentYSegment = Math.round(y/vertical_interval);
 		startX = currentXSegment*horizon_interval, startY = currentYSegment*vertical_interval;
 }
 
@@ -257,18 +282,17 @@ function rerenderCanvas(){
 		renderChessBoard();
 }
 
-function gameTiedCheck(){
+function drawCheck(){
 		var totalMove = move - firstMove;
 		if (totalMove == horizontal_segment*vertical_segment){
-				restart("Game Tied!");
+				restart("Draw!", draw_img);
 		}
 }
 
-function restart(msg){
+function restart(msg, img){
 	  swal({
 	      title: msg,
 	      text: "Restart ?",
-	      type: 'info',
 	      showCancelButton: true,
 	      confirmButtonColor: '#3085d6',
 	      cancelButtonColor: '#d33',
@@ -277,15 +301,24 @@ function restart(msg){
 	      confirmButtonClass: 'btn btn-primary',
 	      cancelButtonClass: 'btn btn-danger',
 	      buttonsStyling: false,
-	      reverseButtons: false
+	      reverseButtons: false,
+				imageUrl: img,
+				imageWidth: 100,
+				imageHeight: 100,
+				imageAlt: 'Custom image',
+				animation: true,
+				padding: 50,
+				background: '#fff url(' + background + ')'
 	  }).then(function(result){
 	      if (result.value) {
 	          initial();
-	          swal(
-	            'Get Ready!',
-	            'Let the game begins!',
-	            'success'
-	          )
+	          swal({
+	            title:'Get Ready!',
+	            text:'Let the game begins!',
+	            type:'success',
+							padding: 50,
+							background: '#fff url(' + background + ')'
+	          });
 	      }
 	  })
 }
@@ -404,7 +437,7 @@ function neg_Diagonal_Check(x, y, player){
 
 function checkConsecutiveSteps(count, player){
 		if (count >= 5){
-	    restart("Congratulations! Player "+player +" wins!");
+	    restart("Congratulations! \nPlayer "+player +" wins!", champ_img);
 			return true;
 		}else{
 			return false;
