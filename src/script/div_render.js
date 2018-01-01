@@ -39,7 +39,7 @@ var Div = {
 		})
 		$("#stone").append(circle);
   },
-  resetContainer:function(){
+  reset:function(){
     $("#stone").empty();
     $("#grid").empty();
   }

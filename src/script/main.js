@@ -20,6 +20,7 @@ var steps;
 var rtime;
 var timeout = false;
 var delta = 200;
+var renderer, container;
 
 initial();
 registerPlayerEvent();
@@ -96,10 +97,10 @@ function playerClick(e){
 	  var radius = horizon_interval > vertical_interval ? vertical_interval/2.5 : horizon_interval/2.5;
 
 	  if (move % 2){
-	    drawArc(startX + horizon_interval/2,  startY + vertical_interval/2, radius, 0,   360, false, "black", "black");
+	    renderer.drawArc(startX + horizon_interval/2,  startY + vertical_interval/2, radius, 0,   360, false, "black", "black");
 
 	  }else{
-	    drawArc(startX + horizon_interval/2,  startY + vertical_interval/2, radius, 0,   360, false, "black", "white");
+	    renderer.drawArc(startX + horizon_interval/2,  startY + vertical_interval/2, radius, 0,   360, false, "black", "white");
 	  }
 
 	  winnerCheck(move%2);
@@ -118,19 +119,23 @@ function fetchBrowserInfo(){
     height = w.innerHeight|| e.clientHeight|| g.clientHeight;
 		horizontal_segment = Math.floor(vertical_segment*(width/height));
     if (Canvas.isCanvasSupported()){
+			renderer = Canvas;
 			if (!$('#main').length){
 				$("body").append("<canvas id='main'></canvas>");
 			}
 			canvas = document.getElementById('main');
       ctx = canvas.getContext('2d');
-			Canvas.setWindowBoundary(ctx, width, height);
+			renderer.setWindowBoundary(ctx, width, height);
+			container = $("#main");
       canvas_support = true;
     }else{
+			renderer = Div;
 			if (!$('#container').length){
 				$("body").append("<div id='container'></div>");
 				$("#container").append("<div id='grid'></div>");
 				$("#container").append("<div id='stone'></div>");
 			}
+			container = $("#container");
       canvas_support = false;
     }
 
@@ -178,34 +183,18 @@ function registerPlayerData(){
 
 
 function computeStartingPoint(x, y){
-		if (!canvas_support){
-			x -= (horizon_interval/2);
-		}else{
-			x -= (horizon_interval/2);
-			y -= (vertical_interval/2);
-		}
+
+		x -= (horizon_interval/2);
+		y -= (vertical_interval/2);
 
 		currentXSegment = Math.round(x/horizon_interval);
 		currentYSegment = Math.round(y/vertical_interval);
 		startX = currentXSegment*horizon_interval, startY = currentYSegment*vertical_interval;
 }
 
-function drawArc(xPos, yPos, radius, startAngle, endAngle, anticlockwise, lineColor, fillColor){
-		if (canvas_support){
-			Canvas.drawArc(xPos, yPos, radius, startAngle, endAngle, anticlockwise, lineColor, fillColor);
-		}else{
-			Div.drawArc(xPos, yPos, radius, startAngle, endAngle, anticlockwise, lineColor, fillColor);
-		}
-}
-
 function renderChessBoard(){
-		if (canvas_support){
-	    Canvas.init(horizontal_segment, horizon_interval, vertical_segment, vertical_interval);
-	    Canvas.renderChessBoard();
-		}else{
-			Div.init(horizontal_segment, horizon_interval, vertical_segment, vertical_interval);
-			Div.renderChessBoard();
-		}
+		renderer.init(horizontal_segment, horizon_interval, vertical_segment, vertical_interval);
+		renderer.renderChessBoard();
 }
 
 function validMove(player){
@@ -242,9 +231,9 @@ function renderPlayerProgress(){
 	  for (var i = 0 ; i < steps.length ; i++){
 	    for (var j = 0 ; j < steps[i].length ; j++){
 	      if (steps[i][j] == 0){
-	        drawArc(i*horizon_interval + horizon_interval/2,  j*vertical_interval + vertical_interval/2, radius, 0,   360, false, "black", "white");
+	        renderer.drawArc(i*horizon_interval + horizon_interval/2,  j*vertical_interval + vertical_interval/2, radius, 0,   360, false, "black", "white");
 	      }else if (steps[i][j] == 1){
-	        drawArc(i*horizon_interval + horizon_interval/2,  j*vertical_interval + vertical_interval/2, radius, 0,   360, false, "black", "black");
+	        renderer.drawArc(i*horizon_interval + horizon_interval/2,  j*vertical_interval + vertical_interval/2, radius, 0,   360, false, "black", "black");
 	      }
 	    }
 	  }
@@ -274,11 +263,7 @@ function canvasResize(){
 
 function rerenderCanvas(){
 	  fetchBrowserInfo();
-		if (canvas_support){
-			Canvas.clearCanvas(canvas.width, canvas.height);
-		}else{
-			Div.resetContainer();
-		}
+		renderer.reset();
 		renderChessBoard();
 }
 
